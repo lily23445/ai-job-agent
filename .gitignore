@@ -1,0 +1,29 @@
+# env & secrets
+.env
+.env.*
+*.env
+
+# virtual env
+.venv/
+
+# python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# user memory (personal data)
+memory/
+
+# uv / pip
+.python-version
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
