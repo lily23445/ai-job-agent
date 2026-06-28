@@ -1,5 +1,7 @@
 # AI Job Agent
 
+**Live demo: [ai-job-agents.streamlit.app](https://ai-job-agents.streamlit.app)**
+
 A LangGraph-powered agent that turns a job description and your resume into a complete interview prep session — research, gap analysis, resume rewriting, mock interview, and a final readiness report.
 
 ## What it does
