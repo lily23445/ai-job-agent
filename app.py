@@ -13,57 +13,99 @@ from nodes.generate_questions import generate_questions
 from nodes.score_answer import score_answer as _score_node
 from nodes.final_report import final_report as _report_node
 
-st.set_page_config(page_title="AI Job Agent", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="AI Job Agent", page_icon="🧭", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
 /* Base */
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-.stApp { background: #0f1117; color: #e0e0e0; }
-h1, h2, h3 { color: #ffffff; }
+.stApp {
+    background:
+        radial-gradient(circle at 15% 0%, rgba(108,99,255,0.12), transparent 45%),
+        radial-gradient(circle at 85% 15%, rgba(167,139,250,0.10), transparent 40%),
+        #0b0d14;
+    color: #e0e0e0;
+}
+h1, h2, h3 { font-family: 'Sora', sans-serif; color: #ffffff; letter-spacing: -0.01em; }
+
+h2:first-of-type, .stMarkdown h2 {
+    background: linear-gradient(90deg, #ffffff 20%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    display: inline-block;
+}
 
 /* Cards */
-.card {
-    background: #1a1d2e;
-    border: 1px solid #2d3148;
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-bottom: 16px;
+.card, div[data-testid="stVerticalBlockBorderWrapper"] {
+    background: linear-gradient(180deg, #171a29 0%, #14161f 100%) !important;
+    border: 1px solid #262b45 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.03);
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+}
+.card { padding: 20px 24px; margin-bottom: 16px; overflow: hidden; }
+.card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6c63ff, #a78bfa, #f472b6);
+    opacity: 0.9;
+}
+.card:hover, div[data-testid="stVerticalBlockBorderWrapper"]:hover {
+    border-color: #3d4372 !important;
+    box-shadow: 0 8px 28px rgba(108,99,255,0.14), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 .card-title {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #7c85b3;
-    margin-bottom: 10px;
+    color: #9aa4e8;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 /* Badges */
 .badge {
     display: inline-block;
-    background: #2d3148;
+    background: #232748;
+    border: 1px solid #333a63;
     border-radius: 20px;
-    padding: 4px 12px;
+    padding: 5px 14px;
     font-size: 13px;
-    margin: 3px;
+    font-weight: 500;
+    margin: 4px;
     color: #c0c8f0;
+    transition: transform 0.15s ease;
 }
-.badge-red { background: #3b1f2b; color: #f08080; }
-.badge-green { background: #1a3b2a; color: #80f0a0; }
+.badge:hover { transform: translateY(-1px); }
+.badge-red { background: #3b1f2b; border-color: #5c2c3d; color: #f5a3a3; }
+.badge-green { background: #16352a; border-color: #1f4d3a; color: #8ff0b4; }
 
 /* Progress bar */
 .progress-track {
-    background: #2d3148;
+    background: #1c2036;
+    border: 1px solid #262b45;
     border-radius: 8px;
-    height: 8px;
+    height: 10px;
     width: 100%;
     margin: 8px 0 16px;
+    overflow: hidden;
 }
 .progress-fill {
-    background: linear-gradient(90deg, #6c63ff, #a78bfa);
+    background: linear-gradient(90deg, #6c63ff, #a78bfa, #f472b6);
     border-radius: 8px;
-    height: 8px;
+    height: 100%;
+    box-shadow: 0 0 12px rgba(167,139,250,0.6);
+    transition: width 0.4s ease;
 }
 
 /* Score ring */
@@ -74,19 +116,50 @@ h1, h2, h3 { color: #ffffff; }
     width: 72px; height: 72px;
     border-radius: 50%;
     border: 4px solid;
+    font-family: 'Sora', sans-serif;
     font-size: 22px;
     font-weight: 700;
     margin-bottom: 8px;
+    background: #14161f;
+    box-shadow: 0 0 0 6px rgba(255,255,255,0.02);
 }
 
 /* Divider */
-.divider { border: none; border-top: 1px solid #2d3148; margin: 20px 0; }
+.divider { border: none; border-top: 1px solid #262b45; margin: 22px 0; }
+
+/* Text areas */
+.stTextArea textarea {
+    background: #14161f !important;
+    border: 1px solid #262b45 !important;
+    border-radius: 10px !important;
+    color: #e6e8f5 !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.stTextArea textarea:focus {
+    border-color: #6c63ff !important;
+    box-shadow: 0 0 0 3px rgba(108,99,255,0.25) !important;
+}
 
 /* Override Streamlit button */
 .stButton > button {
-    border-radius: 8px !important;
-    font-weight: 600 !important;
+    border-radius: 10px !important;
+    font-weight: 700 !important;
     padding: 10px 28px !important;
+    transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+.stButton > button[kind="primary"] {
+    background: linear-gradient(90deg, #6c63ff, #8b7bff) !important;
+    border: none !important;
+    box-shadow: 0 4px 16px rgba(108,99,255,0.35) !important;
+}
+.stButton > button[kind="primary"]:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 22px rgba(108,99,255,0.5) !important;
+}
+.stButton > button:not([kind="primary"]):hover {
+    transform: translateY(-1px);
+    border-color: #6c63ff !important;
+    color: #a78bfa !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -187,8 +260,12 @@ def go(screen: str):
 # ── Screen 1 – Input ─────────────────────────────────────────────────────────
 
 def screen_input():
-    st.markdown("## AI Job Agent")
-    st.markdown("Paste the job description and your resume to get a personalised prep report.")
+    st.markdown("## 🧭 AI Job Agent")
+    st.markdown(
+        '<span style="color:#9aa4e8;font-size:15px">'
+        'Paste the job description and your resume to get a personalised prep report.</span>',
+        unsafe_allow_html=True,
+    )
     st.markdown('<hr class="divider">', unsafe_allow_html=True)
 
     col1, col2 = st.columns(2, gap="large")
@@ -234,7 +311,7 @@ def screen_input():
 
 def screen_results():
     r = st.session_state.results
-    st.markdown(f"## Results — {r['company_name']}")
+    st.markdown(f"## 📊 Results — {r['company_name']}")
     if st.button("← Back"):
         go("input")
     st.markdown('<hr class="divider">', unsafe_allow_html=True)
@@ -243,12 +320,12 @@ def screen_results():
 
     with col_left:
         # Company research
-        st.markdown('<div class="card-title">Company Research</div>', unsafe_allow_html=True)
+        st.markdown('<div class="card-title">🏢 Company Research</div>', unsafe_allow_html=True)
         with st.container(border=True):
             st.write(r["company_research"])
 
         # Rewritten bullets
-        st.markdown('<div class="card-title" style="margin-top:16px">Rewritten Resume Bullets</div>', unsafe_allow_html=True)
+        st.markdown('<div class="card-title" style="margin-top:16px">✍️ Rewritten Resume Bullets</div>', unsafe_allow_html=True)
         with st.container(border=True):
             bullets = r.get("rewritten_bullets") or []
             if bullets:
@@ -259,7 +336,7 @@ def screen_results():
 
     with col_right:
         # Skill gaps
-        st.markdown('<div class="card-title">Skill Gaps</div>', unsafe_allow_html=True)
+        st.markdown('<div class="card-title">🎯 Skill Gaps</div>', unsafe_allow_html=True)
         with st.container(border=True):
             gaps = r.get("skill_gaps") or []
             if gaps:
@@ -269,7 +346,7 @@ def screen_results():
                 st.caption("No gaps identified.")
 
         # Learning resources
-        st.markdown('<div class="card-title" style="margin-top:16px">Learning Resources</div>', unsafe_allow_html=True)
+        st.markdown('<div class="card-title" style="margin-top:16px">📚 Learning Resources</div>', unsafe_allow_html=True)
         with st.container(border=True):
             resources = r.get("learning_resources") or []
             if resources:
@@ -304,7 +381,7 @@ def screen_interview():
     q = questions[idx]
     progress_pct = int(idx / total * 100)
 
-    st.markdown(f"## Interview — {r['company_name']}")
+    st.markdown(f"## 🎤 Interview — {r['company_name']}")
     st.markdown(f"Question **{idx + 1}** of **{total}**")
     st.markdown(
         f'<div class="progress-track"><div class="progress-fill" style="width:{progress_pct}%"></div></div>',
@@ -315,7 +392,7 @@ def screen_interview():
 
     # Show question
     st.markdown(
-        f'<div class="card"><div class="card-title">Question {idx + 1}</div>'
+        f'<div class="card"><div class="card-title">💬 Question {idx + 1}</div>'
         f'<span style="font-size:17px;line-height:1.5">{q["question"]}</span></div>',
         unsafe_allow_html=True,
     )
@@ -326,7 +403,7 @@ def screen_interview():
         color = score_color(fb["score"])
         st.markdown(
             f'<div class="card" style="border-color:{color}44">'
-            f'<div class="card-title">Last Answer — Score</div>'
+            f'<div class="card-title">✅ Last Answer — Score</div>'
             f'<div style="display:flex;align-items:center;gap:16px">'
             f'<div class="score-circle" style="border-color:{color};color:{color}">{fb["score"]}</div>'
             f'<div style="flex:1">{fb["feedback"]}</div>'
@@ -371,7 +448,7 @@ def screen_report():
     avg = rep["average_score"]
     color = score_color(int(avg))
 
-    st.markdown("## Final Report")
+    st.markdown("## 🏆 Final Report")
     st.markdown('<hr class="divider">', unsafe_allow_html=True)
 
     # Average score hero
@@ -388,7 +465,7 @@ def screen_report():
     with col_left:
         # Summary
         st.markdown(
-            f'<div class="card"><div class="card-title">Summary</div>{rep["summary"]}</div>',
+            f'<div class="card"><div class="card-title">📝 Summary</div>{rep["summary"]}</div>',
             unsafe_allow_html=True,
         )
 
@@ -398,13 +475,13 @@ def screen_report():
             c = score_color(s["score"])
             rows_html += (
                 f'<div style="display:flex;justify-content:space-between;align-items:flex-start;'
-                f'padding:10px 0;border-bottom:1px solid #2d3148">'
+                f'padding:10px 0;border-bottom:1px solid #262b45">'
                 f'<div style="flex:1;padding-right:16px;font-size:14px">{s["question"]}</div>'
                 f'<div style="color:{c};font-weight:700;font-size:16px;white-space:nowrap">{s["score"]}/10</div>'
                 f'</div>'
             )
         st.markdown(
-            f'<div class="card"><div class="card-title">Question Breakdown</div>{rows_html}</div>',
+            f'<div class="card"><div class="card-title">📋 Question Breakdown</div>{rows_html}</div>',
             unsafe_allow_html=True,
         )
 
@@ -412,14 +489,14 @@ def screen_report():
         # Weak areas
         weak_html = "".join(f'<span class="badge badge-red">{w}</span>' for w in rep["weak_areas"])
         st.markdown(
-            f'<div class="card"><div class="card-title">Weak Areas to Focus On</div>{weak_html}</div>',
+            f'<div class="card"><div class="card-title">⚠️ Weak Areas to Focus On</div>{weak_html}</div>',
             unsafe_allow_html=True,
         )
 
         # Resources
         res_html = "".join(f"<li style='margin-bottom:8px'>{r}</li>" for r in rep["learning_resources"])
         st.markdown(
-            f'<div class="card"><div class="card-title">Learning Resources</div><ul style="margin:0;padding-left:18px">{res_html}</ul></div>',
+            f'<div class="card"><div class="card-title">📚 Learning Resources</div><ul style="margin:0;padding-left:18px">{res_html}</ul></div>',
             unsafe_allow_html=True,
         )
 
